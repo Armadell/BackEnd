@@ -1,0 +1,20 @@
+{% extends "Home/base.html" %}
+
+{% block content %} 
+
+{% load crispy_forms_tags %}         
+
+<!--Register--> 
+<div class="container py-5">
+	<h1>Update Profile</h1>
+	<form method="POST" action="{% url 'edit_profile'%}" enctype="multipart/form-data">
+		
+		{% csrf_token %}
+		{{ form|crispy }}                    
+		<button class="btn btn-primary" type="submit">Update</button>
+	</form>
+	
+</div>
+
+
+{% endblock %}
