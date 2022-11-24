@@ -5,7 +5,7 @@ from Home.models import User,UserProfile
 from .serializers import RegisterUserSerializer,UserSerializer,UserDetailSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from django.shortcuts import get_object_or_404
 class CustomUserCreate(APIView):
     permission_classes=[AllowAny]
@@ -36,19 +36,22 @@ class BlackListTokenView(APIView):
 class RetriveUserView(APIView):
      permission_classes = [IsAuthenticated]
      def get(self,request):
-         user=request.user
-         user=UserSerializer(user)
+         
+         profile=request.user.profile_picture
+        #  user=UserSerializer(user)
+         user=UserDetailSerializer(profile,many=True)
+         
          print(user.data)
          return Response(user.data,status=status.HTTP_200_OK)
 class UserDetailPage(viewsets.ViewSet):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAdminUser]
     queryset=User.objects.all()
     def list(self,request):
-        serializer_class=UserDetailSerializer(self.queryset,many=True)
+        serializer_class=UserSerializer(self.queryset,many=True)
         return Response(serializer_class.data)
     def retrieve(self,request,pk=None):
         new_query=get_object_or_404(self.queryset,pk=pk)
-        serializer_class=UserDetailSerializer(new_query)
+        serializer_class=UserSerializer(new_query)
         return Response(serializer_class.data)
         
    
