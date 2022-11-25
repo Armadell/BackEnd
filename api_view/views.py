@@ -6,6 +6,12 @@ from .serializers import RegisterUserSerializer,UserSerializer,UserDetailSeriali
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
+from rest_framework import permissions
+from rest_framework import views,generics
+from rest_framework.response import Response
+from django.contrib.auth import login
+
+from . import serializers
 from django.shortcuts import get_object_or_404
 class CustomUserCreate(APIView):
     permission_classes=[AllowAny]
@@ -53,5 +59,50 @@ class UserDetailPage(viewsets.ViewSet):
         new_query=get_object_or_404(self.queryset,pk=pk)
         serializer_class=UserSerializer(new_query)
         return Response(serializer_class.data)
+class LoginView(views.APIView):
+    # This view should be accessible also for unauthenticated users.
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, format=None):
+        serializer = serializers.LoginSerializer(data=self.request.data,
+            context={ 'request': self.request })
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
         
+        login(request, user)
+        
+       
+
+        return Response(None, status=status.HTTP_202_ACCEPTED)
+class ProfileView(generics.ListCreateAPIView):
    
+    queryset=UserProfile.objects.all()
+    serializer_class = serializers.UserDetailSerializer
+    permission_classes = [permissions.IsAdminUser]
+   
+
+    def get_object(self):
+        return self.request.user
+#crud operations in front end
+class CreateUser(generics.CreateAPIView):
+    permission_classes=[permissions.IsAdminUser]
+    queryset=User.objects.all()
+    serializer_class=UserSerializer
+class AdminUserDetail(generics.RetrieveAPIView):
+    permission_classes=[permissions.IsAdminUser]
+    queryset=User.objects.all()
+    serializer_class=UserSerializer
+class EditUser(generics.UpdateAPIView):
+    permission_classes=[permissions.IsAdminUser]
+    queryset=User.objects.all()
+    serializer_class=UserSerializer
+class DeleteUser(generics.RetrieveDestroyAPIView):
+    permission_classes=[permissions.IsAdminUser]
+    queryset=User.objects.all()
+    serializer_class=UserSerializer
+
+    
+
+
+    
+
